@@ -9,7 +9,12 @@ apply from: 'gradle/artifactory.gradle'
 apply from: 'gradle/check.gradle'
 apply from: 'gradle/license.gradle'
 
+group = 'com.inkapplications'
+version = '0.1.1'
 version = "$version${project.hasProperty('release') ? '' : '-SNAPSHOT'}"
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
 
 buildscript {
     repositories {
