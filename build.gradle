@@ -1,100 +1,42 @@
-import groovyx.net.http.ContentType
-import org._10ne.gradle.rest.RestTask
-
-apply from: 'gradle/credentials.gradle'
-apply from: 'gradle/compile.gradle'
-apply from: 'gradle/publishing.gradle'
-apply from: 'gradle/bintray.gradle'
-apply from: 'gradle/artifactory.gradle'
-apply from: 'gradle/check.gradle'
-apply from: 'gradle/license.gradle'
-
-group = 'com.inkapplications'
-version = '0.1.1'
-version = "$version${project.hasProperty('release') ? '' : '-SNAPSHOT'}"
-
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
-
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:3.0.1'
-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0'
-        classpath "org._10ne.gradle:rest-gradle-plugin:0.3.1"
+        classpath 'com.android.tools.build:gradle:1.0.0'
+        classpath 'com.github.dcendents:android-maven-plugin:1.2'
         classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.0.1'
     }
 }
 
-repositories {
-    jcenter()
-}
-
-configurations {
-    markdownDoclet
-}
-
+apply plugin: 'com.android.library'
+apply plugin: 'android-maven'
 apply plugin: 'optional-base'
-apply plugin: 'provided-base'
 
+group 'com.github.InkApplications'
+version 'v1.0.0'
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+android {
+    compileSdkVersion 21
+    buildToolsVersion '21.1.2'
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 21
+        versionName project.version
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+repositories {
+    mavenCentral()
+}
 dependencies {
-    provided 'com.google.android:android:4.1.1.4'
-    compile 'com.google.android:support-v4:r7', optional
+    compile 'com.android.support:support-v4:21.0.0', optional
     compile 'com.squareup.dagger:dagger:1.2.2'
     compile 'com.squareup.dagger:dagger-compiler:1.2.2', optional
-    markdownDoclet 'ch.raffael.pegdown-doclet:pegdown-doclet:1.1.1'
-}
-
-javadoc.options {
-    docletpath = configurations.markdownDoclet.files.asType(List)
-    doclet = "ch.raffael.doclets.pegdown.PegdownDoclet"
-}
-
-apply plugin: "org.10ne.rest"
-
-/**
- * Sign the content that has been uploaded to bintray. This must be done since the plugin does not support signing /
- * bintray doesn't auto sign if the private key requires a password.
- */
-task bintraySign(type: RestTask) {
-    description = "Sign the release build on bintray"
-    httpMethod = 'post'
-    uri = "https://api.bintray.com/gpg/$project_vendor/$project_bintray_repo/${rootProject.name}/versions/$version"
-    username = bintrayUser
-    password = bintrayKey
-    requestBody = [passphrase: signingPassword]
-    contentType = ContentType.JSON
-}
-
-/**
- * Publish the content that has been uploaded to bintray, so you don't need to go to the web ui.
- */
-task bintrayPublishContent(type: RestTask) {
-    description = 'Move files that have been uploaded to bintray to be published'
-    httpMethod = 'post'
-    uri = "https://api.bintray.com/content/$project_vendor/$project_bintray_repo/${rootProject.name}/$version/publish"
-    username = bintrayUser
-    password = bintrayKey
-    contentType = ContentType.JSON
-}
-
-/**
- * Publish uploaded content to maven central, so you don't need to go to the web ui.l
- */
-task bintrayToMavenCentral(type: RestTask) {
-    description = 'Publish from bintray to maven central'
-    httpMethod = 'post'
-    uri = "https://api.bintray.com/maven_central_sync/$project_vendor/$project_bintray_repo/${rootProject.name}/versions/$version"
-    username = bintrayUser
-    password = bintrayKey
-    requestBody = [username: sonatypeUserName, password: sonatypePassword, close: 1]
-    contentType = ContentType.JSON
-}
-
-task bintrayRelease {
-    description = "Releases a version of the library on Artifactory and Bintray"
-    dependsOn bintrayUpload, bintrayPublishContent, bintraySign, bintrayPublishContent, bintrayToMavenCentral
 }
