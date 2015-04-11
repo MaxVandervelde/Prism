@@ -21,4 +21,6 @@ dependencies:
     }
 
 For usage installations take a look at the provided usage docs in 
-[doc/usage.md][2]
+[doc/usage.md][1]
+
+[1]: doc/usage.md
