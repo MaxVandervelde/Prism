@@ -13,13 +13,10 @@ import java.lang.annotation.Target;
  * Defines which module a target class should be a part of when running
  * module injections.
  *
- * @deprecated as of 2.1 specify the module scope in the `@Injected` annotation
- *             instead of using this flag.
  * @author Maxwell Vandervelde (Max@MaxVandervelde.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Deprecated
 public @interface ModuleScope
 {
     /**

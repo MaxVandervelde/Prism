@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015 Ink Applications, LLC.
+ * Copyright (c) 2014 Ink Applications, LLC.
  * Distributed under the MIT License (http://opensource.org/licenses/MIT)
  */
 package prism.framework;
@@ -46,20 +46,7 @@ final public class PrismKernel
      */
     public PrismKernel(GraphContext graph)
     {
-        this.dependencyInjector = new DependencyInjector(graph, false);
-        this.layoutInjector = new ActivityLayoutInjector();
-    }
-
-    /**
-     * Create an application with the specified object graphs.
-     *
-     * @param requireInjectionFlag Whether or not the dependency injector should
-     *     require the `@Injected` flag in order to inject an object
-     *     automatically.
-     */
-    public PrismKernel(GraphContext graph, boolean requireInjectionFlag)
-    {
-        this.dependencyInjector = new DependencyInjector(graph, requireInjectionFlag);
+        this.dependencyInjector = new DependencyInjector(graph);
         this.layoutInjector = new ActivityLayoutInjector();
     }
 

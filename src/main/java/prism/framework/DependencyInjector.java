@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2015 Ink Applications, LLC.
+ * Copyright (c) 2014 Ink Applications, LLC.
  * Distributed under the MIT License (http://opensource.org/licenses/MIT)
  */
 package prism.framework;
@@ -21,12 +21,10 @@ final class DependencyInjector
      */
     final private GraphContext graphContext;
 
-    final private boolean requireInjectionFlag;
-
-    protected DependencyInjector(GraphContext graphContext, boolean requireInjectionFlag)
+    /** Constructor with an application graph. */
+    protected DependencyInjector(GraphContext graphContext)
     {
         this.graphContext = graphContext;
-        this.requireInjectionFlag = requireInjectionFlag;
 
         if (null != this.graphContext) {
             this.graphContext.getApplicationGraph().injectStatics();
@@ -86,10 +84,6 @@ final class DependencyInjector
      */
     public void inject(Object target)
     {
-        if (this.requireInjectionFlag && false == target.getClass().isAnnotationPresent(Injected.class)) {
-            return;
-        }
-
         ObjectGraph applicationGraph = this.graphContext.getApplicationGraph();
 
         applicationGraph.injectStatics();
@@ -108,46 +102,21 @@ final class DependencyInjector
      */
     public void inject(Object target, Activity context)
     {
-        if (this.requireInjectionFlag && false == target.getClass().isAnnotationPresent(Injected.class)) {
-            return;
-        }
-
         Object[] activityModules = this.graphContext.getActivityModules(context);
         ObjectGraph applicationGraph = this.graphContext.getApplicationGraph();
         ObjectGraph activityGraph = applicationGraph.plus(activityModules);
 
-        Class injectionScope = this.getInjectionScope(target);
+        ModuleScope injectionScope = target.getClass().getAnnotation(ModuleScope.class);
         if (null == injectionScope) {
             activityGraph.inject(target);
             return;
         }
 
         Map<Class, Object> scopeModules = this.graphContext.getScopeModules(context);
-        Object scopeModule = scopeModules.get(injectionScope);
+        Object scopeModule = scopeModules.get(injectionScope.value());
         ObjectGraph localGraph = activityGraph.plus(scopeModule);
 
         localGraph.injectStatics();
         localGraph.inject(target);
-    }
-
-    /**
-     * Find a scoped module that should be used for the target injectable.
-     *
-     * @param target The service that is being injected.
-     * @return The module specified by the injectable target.
-     */
-    private Class getInjectionScope(Object target)
-    {
-        Injected injectedScope = target.getClass().getAnnotation(Injected.class);
-        if (null != injectedScope) {
-            return  injectedScope.moduleScope();
-        }
-
-        ModuleScope moduleScope = target.getClass().getAnnotation(ModuleScope.class);
-        if (null != moduleScope) {
-            return moduleScope.value();
-        }
-
-        return null;
     }
 }

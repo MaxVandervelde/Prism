@@ -172,7 +172,7 @@ that same class.
 ```
 
 Doing so will allow you to give access to the modules only when the injected
-class is annotated with `@Injected(moduleScope=ExampleModule.class)`
+class is annotated with `@ModuleScope(ExampleModule.class)`
 
 ### Finishing Dagger Injection ###
 
