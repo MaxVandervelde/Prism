@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Ink Applications, LLC.
+ * Copyright (c) 2015 Ink Applications, LLC.
  * Distributed under the MIT License (http://opensource.org/licenses/MIT)
  */
 package prism.framework;
@@ -10,20 +10,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines which module a target class should be a part of when running
- * module injections.
+ * Denotes that a service should be injected by the framework automatically.
  *
- * @deprecated as of 2.1 specify the module scope in the `@Injected` annotation
- *             instead of using this flag.
+ * This annotation does NOT cause the framework to inject any service, rather
+ * this is intended to prevent the framework from injecting services
+ * automatically unless this annotation is present.
+ *
+ * @since 1.1
  * @author Maxwell Vandervelde (Max@MaxVandervelde.com)
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@Deprecated
-public @interface ModuleScope
+public @interface Injected
 {
     /**
      * The Module class to include in the injection scope.
      */
-    Class value();
+    Class moduleScope();
 }
