@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2014 Ink Applications, LLC.
+ * Copyright (c) 2014-2015 Ink Applications, LLC.
  * Distributed under the MIT License (http://opensource.org/licenses/MIT)
  */
 package prism.framework;
 
 import android.app.Activity;
+import org.apache.commons.logging.Log;
 
 /**
  * The core loader for the framework.
@@ -95,11 +96,26 @@ final public class PrismKernel
     }
 
     /**
-     * Changes Whether or not the framework will set thecontent view on
+     * Changes Whether or not the framework will set the content view on
      * activities during their bootstrap phase.
      */
     public void shouldInjectContentView(boolean runInjections)
     {
         this.injectContentView = runInjections;
+    }
+
+    /**
+     * Change the logger used for tracking injection problems.
+     *
+     * @param logger A logger to use for tracking injection problems or Null to
+     *               disable logging (default behavior.)
+     */
+    public void setLogger(Log logger)
+    {
+        if (null == logger) {
+            this.dependencyInjector.setLogger(new NoOpLog());
+        } else {
+            this.dependencyInjector.setLogger(logger);
+        }
     }
 }

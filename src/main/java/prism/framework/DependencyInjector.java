@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2014 Ink Applications, LLC.
+ * Copyright (c) 2014-2015 Ink Applications, LLC.
  * Distributed under the MIT License (http://opensource.org/licenses/MIT)
  */
 package prism.framework;
 
 import android.app.Activity;
 import dagger.ObjectGraph;
+import org.apache.commons.logging.Log;
 
 import java.util.Map;
 
@@ -20,6 +21,11 @@ final class DependencyInjector
      * Container for Application and activity graphs.
      */
     final private GraphContext graphContext;
+
+    /**
+     * An optional logger for any injection problems.
+     */
+    private Log logger = new NoOpLog();
 
     /** Constructor with an application graph. */
     protected DependencyInjector(GraphContext graphContext)
@@ -87,7 +93,7 @@ final class DependencyInjector
         ObjectGraph applicationGraph = this.graphContext.getApplicationGraph();
 
         applicationGraph.injectStatics();
-        applicationGraph.inject(target);
+        this.inject(applicationGraph, target);
     }
 
     /**
@@ -108,7 +114,7 @@ final class DependencyInjector
 
         ModuleScope injectionScope = target.getClass().getAnnotation(ModuleScope.class);
         if (null == injectionScope) {
-            activityGraph.inject(target);
+            this.inject(activityGraph, target);
             return;
         }
 
@@ -117,6 +123,42 @@ final class DependencyInjector
         ObjectGraph localGraph = activityGraph.plus(scopeModule);
 
         localGraph.injectStatics();
-        localGraph.inject(target);
+        this.inject(localGraph, target);
+    }
+
+    /**
+     * Attempts to inject a target with the specified graph of dependencies.
+     *
+     * If this fails, an error will be logged instead of an exception being
+     * thrown. This is to allow automatic injections to proceed even through
+     * third-party activities.
+     *
+     * @param graph The service graph to use for injections.
+     * @param target the class containing injectable fields.
+     */
+    private void inject(ObjectGraph graph, Object target)
+    {
+        try {
+            graph.inject(target);
+        } catch(IllegalArgumentException e) {
+            this.logger.warn(
+                "PROBLEM OCCURRED injecting target with activity context! "
+                + "Target class: ("
+                + target.getClass().getName()
+                + ") Dagger requires that the class is explicitly added into"
+                + " `injects={}` on a module.",
+                e
+            );
+        }
+    }
+
+    /**
+     * Change the logger used for tracking injection problems.
+     *
+     * @param logger A logger to use for tracking injection problems.
+     */
+    public void setLogger(Log logger)
+    {
+        this.logger = logger;
     }
 }
